@@ -102,3 +102,30 @@ int main(void)
 
 > ⚙️ **APP 端的配套修改（极其重要）**
 > Bootloader 烧录完成并成功跳转到 APP 后，**APP 的 `main` 函数开头必须将中断向量表偏移**！（例如 `SCB->VTOR = 0x08005000;`）否则进入 APP 后各外设的中断将无法正常响应。
+> ## 📂 Project Directory Structure
+
+```text
+STM32G0-OpenBLT-USB-CDC/
+├── General_Boot/                     # Core Bootloader implementation folder
+│   ├── bin/                          # Binary output directory (.bin, .hex, .srec)
+│   ├── ide/                          # IAR Embedded Workbench project workspace
+│   │   └── STM32G0B1_Boot.eww        # Main IAR workspace file
+│   ├── lib/                          # Underlying core library files
+│   ├── USB_Device/                   # ST Microelectronics USB Device Stack Middleware
+│   │   └── App/
+│   │       ├── usbd_cdc_if.c         # Modified media interface (NAK deferred flow control)
+│   │       └── usbd_cdc_if.h         # Global export header for CDC transmission APIs
+│   ├── flash_layout.c                # Flash sector and block sizing configuration
+│   ├── hooks.c                       # OpenBLT native callback hook implementations
+│   ├── main.c                        # Application entrance (Contains pure polling while(1) loop)
+│   ├── usb_cdc_poll.c                # Hardware driver (HSI48 clock initialization & CRS engine)
+│   ├── usb_cdc_poll.h                # Ring buffer geometry settings and hardware driver prototypes
+│   ├── blt_conf.h                    # Global openBLT macro profile (Contains BOOT_COM_USB_CDC_ENABLE)
+│   ├── stm32g0b1xx_flash.icf         # IAR linker script defining memory limits (0x08000000 - 0x08005FFF)
+│   └── startup_stm32g0b1xx.s         # Low-level assembly reset handler vector definitions
+├── Source/                           # OpenBLT base repository source code
+│   └── ARMCM0_STM32G0/               # Target architecture port files for Cortex-M0+ G0 series
+│       └── rs232.c                   # Serial port redirection module with conditional compilation macro
+├── App_Prog/                         # Example reference application (Vector Table offset to 0x08006000)
+└── README.md                         # This international documentation file
+```
